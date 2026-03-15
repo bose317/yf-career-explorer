@@ -1050,14 +1050,7 @@ elif _page == 3:
                         st.error(f"AI generation failed: {_e}")
 
         if "ai_report" in st.session_state:
-            st.markdown(
-                "<div style='border:1px solid #E2E8F0;border-radius:8px;"
-                "background:#fff;padding:28px 32px;"
-                "box-shadow:0 1px 4px rgba(0,0,0,.06)'>",
-                unsafe_allow_html=True,
-            )
             st.markdown(st.session_state["ai_report"])
-            st.markdown("</div>", unsafe_allow_html=True)
 
             st.markdown("<div style='height:12px'></div>", unsafe_allow_html=True)
             _rc, _ = st.columns([1.5, 7])
