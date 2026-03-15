@@ -936,17 +936,24 @@ def _render_analysis():
         # ── Navigate to Competence Comparison ─────────────────
         st.divider()
         st.markdown(
-            '<div style="background:#F8FAFC;border:1px solid #E5E7EB;border-radius:14px;'
-            'padding:20px 22px;margin-top:8px">'
-            '<div style="font-size:.82rem;font-weight:700;color:#111827;margin-bottom:6px">'
-            'Ready to go deeper?</div>'
-            '<div style="font-size:.8rem;color:#6B7280;line-height:1.6;margin-bottom:16px">'
-            'Cross-reference your Holland Code interests with Canadian labour market data, '
-            'NOC occupations, and your field of study. Use the sidebar to navigate to '
-            '<strong>Competence Comparison</strong>.</div>'
-            '</div>',
+            "<div style='background:#0F172A;border-radius:12px;padding:24px 28px;margin-top:8px'>"
+            "<div style='font-size:.65rem;font-weight:700;letter-spacing:.1em;"
+            "text-transform:uppercase;color:#475569;margin-bottom:8px'>Next Step</div>"
+            "<div style='font-size:1.05rem;font-weight:800;color:#F8FAFC;margin-bottom:8px'>"
+            "Compare Competencies</div>"
+            "<div style='font-size:.82rem;color:#64748B;line-height:1.65;margin-bottom:0'>"
+            "Your Holland Code career matches are saved. Cross-reference them with your "
+            "Career Explorer occupations — skills, knowledge, and work-style gaps, "
+            "plus an AI advising report.</div>"
+            "</div>",
             unsafe_allow_html=True,
         )
+        st.markdown("<div style='height:12px'></div>", unsafe_allow_html=True)
+        _, _btn_c, _ = st.columns([1, 2, 1])
+        with _btn_c:
+            if st.button("Go to Competence Comparison →", type="primary",
+                         use_container_width=True, key="to_comparison"):
+                st.switch_page("pages/3_Competence_Comparison.py")
 
     # AI generation
     st.divider()
