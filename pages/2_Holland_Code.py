@@ -9,6 +9,7 @@ from __future__ import annotations
 import math
 import re
 import os
+import time
 
 import streamlit as st
 import plotly.graph_objects as go
@@ -968,44 +969,42 @@ def _render_analysis():
                 "AI Interpretation</div>",
                 unsafe_allow_html=True,
             )
-            _pb   = st.progress(0, text="Initialising…")
-            _stat = st.empty()
+            _pb = st.progress(0, text="Initialising…")
             try:
-                _phases = [
-                    (0.08,  "Analysing your RIASEC profile…"),
-                    (0.20,  "Identifying personality dimensions…"),
-                    (0.35,  "Mapping Holland Code structure…"),
-                    (0.50,  "Exploring career relationships…"),
-                    (0.70,  "Building career map & action plan…"),
-                    (0.88,  "Finalising interpretation…"),
-                    (1.00,  "Complete"),
+                # Phases keyed by elapsed seconds (estimated ~45 s for full report)
+                _PHASES = [
+                    ( 0, "Analysing your RIASEC profile…"),
+                    ( 8, "Identifying personality dimensions…"),
+                    (16, "Mapping Holland Code structure…"),
+                    (25, "Exploring career relationships…"),
+                    (33, "Building career map & action plan…"),
+                    (40, "Finalising interpretation…"),
                 ]
-                _phase_idx = 0
-                _buf = []
-                _char_count = 0
-                # Estimate total chars for progress (Qwen3 typically ~4000-6000 chars)
-                _EST_TOTAL = 5000
+                _EST_SECONDS = 50   # generous upper bound
+                _buf: list = []
+                _t0 = time.time()
+                _last_ui = _t0     # throttle: update UI at most ~3× per second
 
                 for _chunk in _qwen_stream(scores, rule, oasis, stage, scenario, background):
                     _buf.append(_chunk)
-                    _char_count += len(_chunk)
-                    # Advance through phases based on chars received
-                    _raw_pct = min(_char_count / _EST_TOTAL, 0.97)
-                    while (_phase_idx < len(_phases) - 1 and
-                           _raw_pct >= _phases[_phase_idx][0]):
-                        _phase_idx += 1
-                    _pct, _msg = _phases[_phase_idx]
-                    _pb.progress(min(_raw_pct, _pct), text=_msg)
+                    _now = time.time()
+                    if _now - _last_ui >= 0.35:
+                        _elapsed = _now - _t0
+                        _pct = min(_elapsed / _EST_SECONDS, 0.95)
+                        _msg = _PHASES[0][1]
+                        for _sec, _m in _PHASES:
+                            if _elapsed >= _sec:
+                                _msg = _m
+                        _pb.progress(_pct, text=_msg)
+                        _last_ui = _now
 
-                _pb.progress(1.0, text="Complete")
-                _stat.empty()
+                _pb.progress(1.0, text="Done — loading results…")
                 _report = "".join(_buf)
                 st.session_state["_ai_layers"] = _parse_layers(_report)
                 del st.session_state["_ai_gen"]
                 st.rerun()
             except Exception as e:
                 _pb.empty()
-                _stat.empty()
                 st.error(f"AI generation failed: {e}")
                 del st.session_state["_ai_gen"]
     elif not st.session_state.get("_ai_layers"):
