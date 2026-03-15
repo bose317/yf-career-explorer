@@ -962,13 +962,50 @@ def _render_analysis():
             st.error("openai package not installed.")
             del st.session_state["_ai_gen"]
         else:
-            st.markdown('<div style="font-size:.72rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:#9CA3AF;margin-bottom:12px">AI Interpretation — generating…</div>', unsafe_allow_html=True)
+            st.markdown(
+                "<div style='font-size:.72rem;font-weight:600;letter-spacing:.08em;"
+                "text-transform:uppercase;color:#9CA3AF;margin-bottom:14px'>"
+                "AI Interpretation</div>",
+                unsafe_allow_html=True,
+            )
+            _pb   = st.progress(0, text="Initialising…")
+            _stat = st.empty()
             try:
-                report = st.write_stream(_qwen_stream(scores, rule, oasis, stage, scenario, background))
-                st.session_state["_ai_layers"] = _parse_layers(report)
+                _phases = [
+                    (0.08,  "Analysing your RIASEC profile…"),
+                    (0.20,  "Identifying personality dimensions…"),
+                    (0.35,  "Mapping Holland Code structure…"),
+                    (0.50,  "Exploring career relationships…"),
+                    (0.70,  "Building career map & action plan…"),
+                    (0.88,  "Finalising interpretation…"),
+                    (1.00,  "Complete"),
+                ]
+                _phase_idx = 0
+                _buf = []
+                _char_count = 0
+                # Estimate total chars for progress (Qwen3 typically ~4000-6000 chars)
+                _EST_TOTAL = 5000
+
+                for _chunk in _qwen_stream(scores, rule, oasis, stage, scenario, background):
+                    _buf.append(_chunk)
+                    _char_count += len(_chunk)
+                    # Advance through phases based on chars received
+                    _raw_pct = min(_char_count / _EST_TOTAL, 0.97)
+                    while (_phase_idx < len(_phases) - 1 and
+                           _raw_pct >= _phases[_phase_idx][0]):
+                        _phase_idx += 1
+                    _pct, _msg = _phases[_phase_idx]
+                    _pb.progress(min(_raw_pct, _pct), text=_msg)
+
+                _pb.progress(1.0, text="Complete")
+                _stat.empty()
+                _report = "".join(_buf)
+                st.session_state["_ai_layers"] = _parse_layers(_report)
                 del st.session_state["_ai_gen"]
                 st.rerun()
             except Exception as e:
+                _pb.empty()
+                _stat.empty()
                 st.error(f"AI generation failed: {e}")
                 del st.session_state["_ai_gen"]
     elif not st.session_state.get("_ai_layers"):
