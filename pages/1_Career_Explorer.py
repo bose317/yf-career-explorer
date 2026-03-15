@@ -3755,11 +3755,21 @@ def _render_holland_results():
 
 
 def _holland_sidebar_button(page_key: str = ""):
-    """Show Holland Code test prompt after the user has selected NOC occupations."""
+    """Show Holland Code test button after the user has selected 6 NOC occupations."""
     if len(st.session_state.get("ce_top_nocs", [])) < 6:
         return
     st.divider()
-    st.info("Navigate to **Holland Code Test** in the sidebar to discover your career interests.")
+    st.markdown(
+        "<div style='font-size:.72rem;font-weight:700;color:#F59E0B;"
+        "text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px'>"
+        "Next Step</div>"
+        "<div style='font-size:.78rem;color:#94A3B8;margin-bottom:10px'>"
+        "6 occupations selected. Discover how your personality aligns with these careers.</div>",
+        unsafe_allow_html=True,
+    )
+    if st.button("Take Holland Code Test →", type="primary", use_container_width=True,
+                 key=f"holland_btn_{page_key}"):
+        st.switch_page("pages/2_Holland_Code.py")
 
 
 # ── Router ────────────────────────────────────────────────────────
