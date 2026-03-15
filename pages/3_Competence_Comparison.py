@@ -913,30 +913,41 @@ elif _page == 3:
     # Top gaps bar chart — gap magnitude only
     top_gaps = sorted_items[:12]
     if top_gaps:
+        # Colour by category
+        _SECT_COLOR = {
+            "Skills":      "#6366F1",   # indigo
+            "Work Styles": "#0EA5E9",   # sky blue
+            "Knowledge":   "#10B981",   # emerald
+        }
         _rev = list(reversed(top_gaps))
-        _names     = [it["name"] for it in _rev]
-        _gap_vals  = [abs(it["career_avg"] - it["holland_avg"]) for it in _rev]
-        _bar_colors = [
-            "#DC2626" if it["norm_gap"] > 0.50 else
-            "#EA580C" if it["norm_gap"] > 0.35 else
-            "#D97706"
-            for it in _rev
-        ]
+        _names      = [it["name"] for it in _rev]
+        _gap_vals   = [abs(it["career_avg"] - it["holland_avg"]) for it in _rev]
+        _bar_colors = [_SECT_COLOR.get(it["section"], "#94A3B8") for it in _rev]
         _hover = [
-            f"{it['name']}<br>Career: {it['career_avg']:.1f} · Holland: {it['holland_avg']:.1f}"
-            f"<br>Gap: {abs(it['career_avg']-it['holland_avg']):.2f} ({it['norm_gap']*100:.0f}%)"
+            f"<b>{it['name']}</b>  [{it['section']}]"
+            f"<br>Career: {it['career_avg']:.1f} · Holland: {it['holland_avg']:.1f}"
+            f"<br>Gap: {abs(it['career_avg']-it['holland_avg']):.2f}  ({it['norm_gap']*100:.0f}%  {it['match_label']})"
             for it in _rev
         ]
 
+        # One trace per section so legend entries appear
         fig_bar = go.Figure()
-        fig_bar.add_trace(go.Bar(
-            y=_names, x=_gap_vals,
-            orientation="h",
-            marker=dict(color=_bar_colors, opacity=0.9),
-            hovertext=_hover,
-            hovertemplate="%{hovertext}<extra></extra>",
-        ))
+        for _sect, _clr in _SECT_COLOR.items():
+            _idx = [i for i, it in enumerate(_rev) if it["section"] == _sect]
+            if not _idx:
+                continue
+            fig_bar.add_trace(go.Bar(
+                name=_sect,
+                y=[_names[i] for i in _idx],
+                x=[_gap_vals[i] for i in _idx],
+                orientation="h",
+                marker=dict(color=_clr, opacity=0.88),
+                hovertext=[_hover[i] for i in _idx],
+                hovertemplate="%{hovertext}<extra></extra>",
+            ))
+
         fig_bar.update_layout(
+            barmode="overlay",
             xaxis=dict(
                 title=dict(text="Gap (score units)", font=dict(size=10, color="#94A3B8")),
                 range=[0, 5], tickfont=dict(size=9, color="#94A3B8"),
@@ -944,11 +955,17 @@ elif _page == 3:
             ),
             yaxis=dict(
                 automargin=True, tickfont=dict(size=9.5, color="#334155"),
-                linecolor="#E2E8F0",
+                linecolor="#E2E8F0", categoryorder="array",
+                categoryarray=_names,
             ),
-            showlegend=False,
-            margin=dict(t=44, b=20, l=10, r=16),
-            height=max(290, len(top_gaps) * 28 + 60),
+            showlegend=True,
+            legend=dict(
+                font=dict(size=10, color="#334155"),
+                bgcolor="rgba(0,0,0,0)",
+                orientation="h", y=1.06, x=0,
+            ),
+            margin=dict(t=52, b=20, l=10, r=16),
+            height=max(300, len(top_gaps) * 28 + 80),
             title=dict(
                 text="Top 12 Competency Gaps — Score Difference",
                 font=dict(size=12, color="#0F172A"),
