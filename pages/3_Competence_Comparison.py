@@ -901,11 +901,11 @@ elif _page == 3:
                         orientation="v", x=1.02, y=0.5),
             margin=dict(t=40, b=20, l=0, r=80),
             height=300,
-            title=dict(text="Match Distribution", font=dict(size=12, color="#0F172A"), x=0.38),
+            title=dict(text="Match Distribution", font=dict(size=12, color="#0F172A"), x=0.5),
             paper_bgcolor="rgba(0,0,0,0)",
             annotations=[dict(
                 text=f"<b>{avg_norm*100:.0f}%</b><br><span style='font-size:9'>avg gap</span>",
-                x=0.37, y=0.5, font=dict(size=13, color=overall_clr), showarrow=False,
+                x=0.5, y=0.5, font=dict(size=13, color=overall_clr), showarrow=False,
             )],
         )
         st.plotly_chart(fig_donut, use_container_width=True)
