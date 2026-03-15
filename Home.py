@@ -108,7 +108,7 @@ st.markdown(_hero, unsafe_allow_html=True)
 _, btn_col, _ = st.columns([2.8, 1.6, 2.8])
 with btn_col:
     if st.button("Get Started →", use_container_width=True):
-        st.switch_page("pages/0_User_Profile.py")
+        st.switch_page("pages/1_Career_Explorer.py")
 
 # ── Footer ────────────────────────────────────────────────────
 st.markdown(
